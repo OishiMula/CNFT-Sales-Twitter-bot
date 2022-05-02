@@ -106,7 +106,7 @@ async function postTweet(asset) {
       await delay(5000);
     }
   }
-  console.log(`Tweeted: ${assetName} | Price: ₳${soldPrice} ($${adaUSD} | Tweet ID: ${newTweet.id_str})`);
+  console.log(`Tweeted: ${assetName} - ₳${soldPrice} | Tweet ID: ${newTweet.id_str})`);
 }
 
 async function main() {
