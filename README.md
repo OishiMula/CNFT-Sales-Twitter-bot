@@ -1,4 +1,4 @@
-# JS - CNFT Sales Twitter Bot
+# CNFT Sales Twitter Bot
 A Cardano NFT Twitter bot that monitors sales for a collection. It pulls and monitors data from [OpenCNFT](https://opencnft.io/) and posts any new sales on Twitter. The bot was created with Javascript + Node.js. It is very similar to a Python verison I built: [CNFT Sales Twitter Bot](https://github.com/OishiMula/cnft_twitter_bot). It should be fairly easy to tweak around in case anyone wishes to use it for their own project.<br>
 
 # Requirements
