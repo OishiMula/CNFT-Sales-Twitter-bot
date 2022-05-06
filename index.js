@@ -1,7 +1,4 @@
-/* eslint-disable no-console */
-/* eslint-disable no-promise-executor-return */
-/* eslint-disable no-await-in-loop */
-/* Twitter Sales Bot for El Matador CNFT
+/* Twitter Sales Bot
 Created by Oishi Mula, 5/1/2022 */
 
 // Add required libs
@@ -11,9 +8,7 @@ require('console-stamp')(console, {
 const { TwitterApi } = require('twitter-api-v2');
 const fetch = require('cross-fetch');
 const fs = require('fs');
-const pluralize = require('pluralize');
 const CoinGecko = require('coingecko-api');
-
 const CoinGeckoClient = new CoinGecko();
 const sharp = require('sharp');
 
@@ -86,6 +81,8 @@ async function postTweet(asset) {
   const assetImage = await download(`${ipfsBase}${assetImgRaw}`, 'image');
   let mediaId;
   let newTweet;
+
+  // Resizing in case asset image has a big file size
   try {
     mediaId = await client.v1.uploadMedia(Buffer.from(assetImage), { mimeType: 'image.png' });
   } catch (error) {
@@ -106,7 +103,7 @@ async function postTweet(asset) {
       await delay(5000);
     }
   }
-  console.log(`Tweeted: ${assetName} - ₳${soldPrice} | Tweet ID: ${newTweet.id_str})`);
+  console.log(`Tweeted: ${assetName} - ₳${soldPrice}($${adaUSD}) | Tweet ID: ${newTweet.id_str}`);
 }
 
 async function main() {
@@ -133,25 +130,20 @@ async function main() {
     let checkFlag = true;
     let num = 0;
     pageNum = 1;
-    let totalSales = 0;
     const fileDate = Number(lastPosted.sold_at);
 
     while (checkFlag === true) {
       const salesDate = Number(currentSales.items[num].sold_at);
       // compare dates
       if (salesDate > fileDate) {
-        totalSales += 1;
-        console.log(`Sale #${totalSales} - ${currentSales.items[num].unit_name}`);
         num += 1;
         if (num === 20) {
           num = 0;
           pageNum += 1;
           opencnftApi = setPage(pageNum);
-          console.log(`Page number: ${pageNum}`);
           currentSales = await download(opencnftApi, 'sale');
         }
       } else if (num > 0) {
-        console.log(`Found ${totalSales} ${pluralize('sale', totalSales)}`);
         while (num > 0 || pageNum > 1) {
           num -= 1;
           await postTweet(currentSales.items[num]);
