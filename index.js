@@ -2,9 +2,7 @@
 Created by Oishi Mula, 5/1/2022 */
 
 // Add required libs
-require('console-stamp')(console, {
-  format: ':date(mm/dd/yyyy hh:MM:ss TT)',
-});
+require('console-stamp')(console, {format: ':date(mm/dd/yyyy hh:MM:ss TT)',});
 const { TwitterApi } = require('twitter-api-v2');
 const fetch = require('cross-fetch');
 const fs = require('fs');
@@ -30,9 +28,11 @@ const FILEPATH = 'lastPosted.txt';
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 async function download(url, type) {
+  let retry = 0;
   for (;;) {
     try {
       const response = await fetch(url);
+      if (retry > 0) console.log('Retry successful');
       switch (type) {
         case 'sale':
           return await response.json();
@@ -42,7 +42,8 @@ async function download(url, type) {
           return console.error('Error with download!');
       }
     } catch (error) {
-      console.error(`Error: ${error} -- Retrying`);
+      console.error(`Error: ${error.name} -- Retrying`);
+      retry += 1;
       await delay(5000);
     }
   }
@@ -99,7 +100,7 @@ async function postTweet(asset) {
       newTweet = await client.v1.tweet(msg, { media_ids: mediaId });
       break;
     } catch (error) {
-      console.error(`Error: ${error} -- Retrying`);
+      console.error(`Error: ${error.name} -- Retrying`);
       await delay(5000);
     }
   }
@@ -127,12 +128,11 @@ async function main() {
     let currentSales = await download(opencnftApi, 'sale');
 
     // Setting up variables to check recently sold
-    let checkFlag = true;
     let num = 0;
     pageNum = 1;
     const fileDate = Number(lastPosted.sold_at);
 
-    while (checkFlag === true) {
+    for (;;) {
       const salesDate = Number(currentSales.items[num].sold_at);
       // compare dates
       if (salesDate > fileDate) {
@@ -156,14 +156,9 @@ async function main() {
           await delay(500);
         }
         writeRecentlyPosted(currentSales.items[num]);
-        checkFlag = false;
-      } else {
-        checkFlag = false;
-      }
-
-      await delay(150);
+        break;
+      } else break;
     }
-
     await delay(5000);
   }
 }
